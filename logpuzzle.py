@@ -12,10 +12,12 @@ http://code.google.com/edu/languages/google-python-class/
 Given an apache logfile, find the puzzle urls and download the images.
 
 Here's what a puzzle url looks like:
-10.254.254.28 - - [06/Aug/2007:00:13:48 -0700] "GET /~foo/puzzle-bar-aaab.jpg HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
+10.254.254.28 - - [06/Aug/2007:00:13:48 -0700]
+"GET /~foo/puzzle-bar-aaab.jpg HTTP/1.0" 302 528 "-"
+"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6)
+Gecko/20070725 Firefox/2.0.0.6"
 
 """
-
 import os
 import re
 import sys
@@ -28,10 +30,16 @@ def read_urls(filename):
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
-    pass
-
-
+    input_file = open(filename, 'r')
+    content = input_file.read()
+    urls = re.findall(r'\S+puzzle+\S+.jpg', content)
+    my_new_list = ["http://code.google.com" + x for x in urls]
+    if len(my_new_list[0]) == 81:
+        return sorted(my_new_list)
+    else:
+        return sorted(my_new_list, key = lambda x: x[-7:-1])
+        
+       
 def download_images(img_urls, dest_dir):
     """Given the urls already in the correct order, downloads
     each image into the given directory.
@@ -40,16 +48,30 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
+    count = 0
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+    elif os.path.exists(dest_dir):
+        html = file(os.path.join(dest_dir, 'index.html'), 'w')
+        html.write('<html><body>')
+
+        for url in img_urls:
+            name = 'img{}'.format(count)
+            print 'retriving', url
+            urllib.urlretrieve(url, os.path.join(dest_dir, name))
+            html.write("<img src ='{}'>".format(name))
+            count += 1
+        print "retive successful!"
+        html.write('</body></html>')
+        html.close()
 
 
 def create_parser():
     """Create an argument parser object"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--todir',  help='destination directory for downloaded images')
+    parser.add_argument('-d', '--todir',
+                        help='destination directory for downloaded images')
     parser.add_argument('logfile', help='apache logfile to extract urls from')
-
     return parser
 
 
